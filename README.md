@@ -1,5 +1,12 @@
 # QAOA Max-Cut
 
+## Contributors
+
+  + [Ignacio Fernandez Graña](https://github.com/inafergra)
+  + [Smit Chaudhary](https://github.com/smitchaudhary)
+  + Luigi Pio Mastrodomenico
+
+
 ## Description of the Project
 
 Our goal is to implement a Quantum Approximate Optimization Algorithm (QAOA) to solve the Max-Cut problem(an NP-hard problem). The Max-Cut problem can be briefly stated as follows: given an undirectional graph, partition the nodes into two sets such that the number of edges crossing these sets is maximized.
