@@ -4,7 +4,7 @@
 
   + [Ignacio Fernandez Graña](https://github.com/inafergra)
   + [Smit Chaudhary](https://github.com/smitchaudhary)
-  + Luigi Pio Mastrodomenico
+  + [Luigi Pio Mastrodomenico](https://github.com/Aloisiu)
 
 
 ## Description of the Project
