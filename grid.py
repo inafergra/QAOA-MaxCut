@@ -1,4 +1,3 @@
-
 import networkx as nx
 
 import matplotlib.pyplot as plt 
@@ -65,11 +64,11 @@ def get_expect_value(counts, shots):
     avr_cost = total_cost/shots
     return avr_cost
 
+#Making a solution grid-------------------------------------------------------------------
 backend = Aer.get_backend("qasm_simulator")
 shots = 100
-avr_cost_grid = np.zeros((50,50))
 
-#Making a solution grid-------------------------------------------------------------------
+avr_cost_grid = np.zeros((50,50))
 
 for i in np.arange(0, 10, 0.2): #gamma and beta grid
     for j in np.arange(0, 10, 0.2):

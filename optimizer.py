@@ -9,12 +9,12 @@ from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit, execute
 from qiskit.tools.monitor       import job_monitor
 from qiskit.visualization import plot_histogram
 
-from scipy.optimize import minimize     
+from scipy.optimize import minimize, LinearConstraint     
 
-# Generating the graph with 2 nodes 
-n = 2
+# Generating the graph
+n = 4
 V = np.arange(0,n,1)
-E =[(0,1,1.0)] 
+E =[(0,1,1.0), (1,2,1.0), (2,3,1.0), (3,0,1.0)] 
 
 G = nx.Graph()
 G.add_nodes_from(V)
@@ -34,7 +34,7 @@ def cost_function_C(x,G):
 
     return C
 
-def quantum_circuit(G, gamma, beta, shots):
+def quantum_circuit(G, gamma, beta, shots): #returns an instance of the Results class
 
     n = len(G.nodes())
 
@@ -69,15 +69,19 @@ def get_expect_value(counts, shots):
 def expect_value_function(parameters,G):
     gamma = parameters[0]
     beta = parameters[1]
-    shots = 100
+    shots = 1000
     counts = quantum_circuit(G,gamma,beta,shots)
     avr_cost = get_expect_value(counts, shots)
     return avr_cost
 
 #Optimizing the solution
-min_vals = minimize(expect_value_function, x0=np.random.randn(2),args=(G),options={'disp': True}, method = 'SLSQP')
-optimal_gamma, optimal_beta = min_vals['x']
+bounds = ((0, np.pi), (0, 2*np.pi))
+
+max_expect_value = minimize(expect_value_function, x0=np.random.randn(2),args=(G), bounds=bounds, options={'disp': False}, method = 'SLSQP')
+optimal_gamma, optimal_beta = max_expect_value['x']
+
 print(optimal_gamma,optimal_beta)
+print(max_expect_value)
 
 counts = quantum_circuit(G,optimal_gamma,optimal_beta,100)
 fig = plot_histogram(counts,figsize = (8,6),bar_labels = False)
