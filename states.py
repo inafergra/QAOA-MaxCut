@@ -69,19 +69,19 @@ def weighted_fournodes_graph(): #4-node 3-regular yutsis graph
     return G
 
 # Choose your fighter
-G = diamond_graph()
+G = fournodes_3reg_graph()
 n = len(G.nodes())
 E = G.edges()
 
 # Generate plot of the Graph
-colors = ['g' for node in G.nodes()]
+#colors = ['g' for node in G.nodes()]
 #nx.draw_networkx(G, node_color=colors)
 
 toc = t.process_time()
 print("It took " + str(toc - tic) + " seconds to generate graph")
 tic = t.process_time()
 
-p = 5
+p = 2
 
 def circuit_ansatz(G, gamma, beta, p=1): #gamma and beta are p-lists
     n = len(G.nodes())
@@ -113,6 +113,7 @@ def execute_circuit(G, gamma, beta, backend, p = 1, noise_model = None):
     statevector = result.get_statevector(QAOA)
     amplitudes = ([abs(i) for i in statevector])
     state_dictionary = {bin(i)[2:].zfill(n) : amplitudes[i] for i in range(len(amplitudes))}
+    #plot_histogram(state_dictionary,figsize = (8,6),bar_labels = False)
     return state_dictionary #Dictionary holding all the amplitudes for the states
 
 def cost_function_C(x,G): #x is a list
@@ -153,6 +154,7 @@ def expect_value_function(parameters, backend, G, p = 1, noise_model = None):
     state_dictionary = execute_circuit(G, gamma, beta, backend, p = p, noise_model = noise_model)
     avr_cost = get_expectval(state_dictionary)
     return -avr_cost
+
 '''
 # Making the grid -----------------------------------------------------------------------------------
 gamma_max = 2*np.pi ;beta_max = 2*np.pi
@@ -178,6 +180,7 @@ pl.ylabel(r'$\gamma$')
 #pl.show()
 #--------------------------------------------------------------------------------------------------------------------------------------------------
 '''
+
 toc = t.process_time()
 print("It took " + str(toc - tic) + " seconds to generate the grid")
 tic = t.process_time()
@@ -203,6 +206,10 @@ print('Expectation value of the cost function = ', -max_expect_value.get('fun'))
 #print('Approximation ratio = ', -max_expect_value.get('fun')/solution_cost )
 
 #plot_histogram(counts,figsize = (8,6),bar_labels = False)
+
+
+optimal_gamma, optimal_beta = max_expect_value['x'][:p], max_expect_value['x'][p:]
+print("Optimal gamma and beta are :(", optimal_gamma, ", ", optimal_beta, ")")
 
 '''
 max_expect_value = differential_evolution(expect_value_function,args=(backend,G,shots,noise_model), bounds=bounds)
@@ -242,3 +249,49 @@ def greedy_solution(G):
 greedy_sol = greedy_solution(G)
 greedy_sol_cost = cost_function_C(greedy_sol, G)
 print(greedy_sol_cost)
+
+states_dict = execute_circuit(G, optimal_gamma, optimal_beta, backend)
+
+def show_amplitudes(G, gamma, beta, p =1):
+
+    n = len(G.nodes())
+    E = G.edges()
+    x_ticks = [bin(i)[2:].zfill(n) for i in range(2**n)]
+    QAOA = QuantumCircuit(n, n)
+    QAOA.h(range(n))
+    QAOA.barrier()
+    plt.figure(1)
+    for i in range(p):
+        for edge in E:
+            k = edge[0]
+            l = edge[1]
+            QAOA.cu1(-2*gamma[i], k, l) #Controlled-Z gate with a -2*gamma phase
+            QAOA.u1(gamma[i], k) #Rotation of gamma around the z axis
+            QAOA.u1(gamma[i], l) #
+
+        statevector = execute(QAOA, backend = backend).result().get_statevector(QAOA)
+        amplitudes = ([abs(i) for i in statevector])
+        state_dict = {bin(i)[2:].zfill(n) : amplitudes[i] for i in range(len(amplitudes))}
+
+        plt.subplot(2,p,2*i+1)
+        plt.bar(range(2**n), amplitudes, align = 'center')
+        plt.xticks(ticks = range(2**n), labels = x_ticks, rotation = 60)
+        plt.title(f"Cost: {get_expectval(state_dict)}\n after $U_c${i}\n gamma = {optimal_gamma[i]}")
+
+        QAOA.barrier()
+        QAOA.rx(2*beta[i], range(n)) #X rotation
+        statevector = execute(QAOA, backend = backend).result().get_statevector(QAOA)
+
+        amplitudes = ([abs(i) for i in statevector])
+        state_dict = {bin(i)[2:].zfill(n) : amplitudes[i] for i in range(len(amplitudes))}
+
+        plt.subplot(2,p,2*i+2)
+        plt.bar(range(2**n), amplitudes, align = 'center')
+        plt.xticks(ticks = range(2**n), labels = x_ticks, rotation = 60)
+        plt.title(f"Cost: {get_expectval(state_dict)}\n after $U_b${i}\n beta = {optimal_gamma[i]}")
+    
+        QAOA.barrier()
+
+    plt.show()
+
+show_amplitudes(G, optimal_gamma, optimal_beta, p = p)
