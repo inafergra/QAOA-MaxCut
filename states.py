@@ -2,6 +2,8 @@ import networkx as nx
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('TKAgg')
 import pylab as pl
 
 from qiskit import Aer
@@ -256,11 +258,21 @@ def show_amplitudes(G, gamma, beta, p =1):
 
     n = len(G.nodes())
     E = G.edges()
-    x_ticks = [bin(i)[2:].zfill(n) for i in range(2**n)]
+
     QAOA = QuantumCircuit(n, n)
     QAOA.h(range(n))
     QAOA.barrier()
-    plt.figure(1)
+
+    fig = plt.figure()
+    graph = plt.bar(range(2**n), [1/(2**n) for i in range(2**n)], align = 'center')
+    x_ticks = [bin(i)[2:].zfill(n) for i in range(2**n)]
+    plt.xticks(ticks = range(2**n), labels = x_ticks, rotation = 60)
+    plt.ylim(0,0.75)
+    plt.title(f'Initial State')
+    fig.canvas.draw()
+    plt.pause(5)
+    plt.savefig(f'Initial State')
+
     for i in range(p):
         for edge in E:
             k = edge[0]
@@ -273,10 +285,12 @@ def show_amplitudes(G, gamma, beta, p =1):
         amplitudes = ([abs(i) for i in statevector])
         state_dict = {bin(i)[2:].zfill(n) : amplitudes[i] for i in range(len(amplitudes))}
 
-        plt.subplot(2,p,2*i+1)
-        plt.bar(range(2**n), amplitudes, align = 'center')
-        plt.xticks(ticks = range(2**n), labels = x_ticks, rotation = 60)
-        plt.title(f"Cost: {get_expectval(state_dict)}\n after $U_c${i}\n gamma = {optimal_gamma[i]}")
+        for rectangle, ampl in zip(graph, amplitudes):
+            rectangle.set_height(ampl)
+        plt.title(f'Cost: {get_expectval(state_dict)}\n Iteration {i + 1}, after applying $U_C$\n $\gamma$ = {optimal_gamma[i]}')
+        fig.canvas.draw()
+        plt.savefig(f'{i} gamma')
+        plt.pause(0.5)
 
         QAOA.barrier()
         QAOA.rx(2*beta[i], range(n)) #X rotation
@@ -285,13 +299,14 @@ def show_amplitudes(G, gamma, beta, p =1):
         amplitudes = ([abs(i) for i in statevector])
         state_dict = {bin(i)[2:].zfill(n) : amplitudes[i] for i in range(len(amplitudes))}
 
-        plt.subplot(2,p,2*i+2)
-        plt.bar(range(2**n), amplitudes, align = 'center')
-        plt.xticks(ticks = range(2**n), labels = x_ticks, rotation = 60)
-        plt.title(f"Cost: {get_expectval(state_dict)}\n after $U_b${i}\n beta = {optimal_gamma[i]}")
-    
-        QAOA.barrier()
+        for rectangle, ampl in zip(graph, amplitudes):
+            rectangle.set_height(ampl)
+        plt.title(f'Cost: {get_expectval(state_dict)}\n Iteration {i + 1}, after applying $U_B$\n $\\beta$ = {optimal_gamma[i]}')
+        fig.canvas.draw()
+        plt.savefig(f'{i} beta')
+        plt.pause(0.5)
 
+        QAOA.barrier()
     plt.show()
 
 show_amplitudes(G, optimal_gamma, optimal_beta, p = p)
