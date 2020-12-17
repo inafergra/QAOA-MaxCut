@@ -34,7 +34,7 @@ def diamond_graph(): #Starmon 5 shape
     G.add_weighted_edges_from(E)
     return G
 
-def triangle(): #Starmon 5 shape
+def triangle():
     n     = 3
     V     = np.arange(0,n,1)
     E     =[(0,1,1.0),(1,2,1.0),(2,0,1.0)]
@@ -70,14 +70,15 @@ def weighted_fournodes_graph(): #4-node 3-regular yutsis graph
     G.add_weighted_edges_from(E)
     return G
 
+
 # Choose your fighter
 G = fournodes_3reg_graph()
 n = len(G.nodes())
 E = G.edges()
 
 # Generate plot of the Graph
-#colors = ['g' for node in G.nodes()]
-#nx.draw_networkx(G, node_color=colors)
+colors = ['g' for node in G.nodes()]
+nx.draw_networkx(G, node_color=colors)
 
 toc = t.process_time()
 print("It took " + str(toc - tic) + " seconds to generate graph")
@@ -114,7 +115,7 @@ def execute_circuit(G, gamma, beta, backend, p = 1, noise_model = None):
     #job_monitor(job)
     statevector = result.get_statevector(QAOA)
     amplitudes = ([abs(i) for i in statevector])
-    state_dictionary = {bin(i)[2:].zfill(n) : amplitudes[i] for i in range(len(amplitudes))}
+    state_dictionary = {bin(i)[2:].zfill(n) : amplitudes[i]**2 for i in range(len(amplitudes))}
     #plot_histogram(state_dictionary,figsize = (8,6),bar_labels = False)
     return state_dictionary #Dictionary holding all the amplitudes for the states
 
@@ -238,19 +239,19 @@ def new_cost(vertex, set, G):
 def greedy_solution(G):
     set_A = [list(G.nodes())[0]]
     set_B = [list(G.nodes())[1]]
-    x = [0]
-    for vertex in list(G.nodes())[1:]:
+    x = [0,1]
+    for vertex in list(G.nodes())[2:]:
         if new_cost(vertex,set_A, G) > new_cost(vertex,set_B, G):
-            set_A.append(vertex)
-            x.append(0)
-        else:
             set_B.append(vertex)
             x.append(1)
+        else:
+            set_A.append(vertex)
+            x.append(0)
     return x
 
 greedy_sol = greedy_solution(G)
 greedy_sol_cost = cost_function_C(greedy_sol, G)
-print(greedy_sol_cost)
+print(f'The greedy solution gives cost: {greedy_sol_cost}')
 
 states_dict = execute_circuit(G, optimal_gamma, optimal_beta, backend)
 
@@ -271,7 +272,7 @@ def show_amplitudes(G, gamma, beta, p =1):
     plt.title(f'Initial State')
     fig.canvas.draw()
     plt.pause(5)
-    plt.savefig(f'Initial State')
+    plt.savefig(f'Initial State bad')
 
     for i in range(p):
         for edge in E:
@@ -283,13 +284,13 @@ def show_amplitudes(G, gamma, beta, p =1):
 
         statevector = execute(QAOA, backend = backend).result().get_statevector(QAOA)
         amplitudes = ([abs(i) for i in statevector])
-        state_dict = {bin(i)[2:].zfill(n) : amplitudes[i] for i in range(len(amplitudes))}
+        state_dict = {bin(i)[2:].zfill(n) : amplitudes[i]**2 for i in range(len(amplitudes))}
 
         for rectangle, ampl in zip(graph, amplitudes):
-            rectangle.set_height(ampl)
+            rectangle.set_height(ampl**2)
         plt.title(f'Cost: {get_expectval(state_dict)}\n Iteration {i + 1}, after applying $U_C$\n $\gamma$ = {optimal_gamma[i]}')
         fig.canvas.draw()
-        plt.savefig(f'{i} gamma')
+        plt.savefig(f'{i} gamma bad')
         plt.pause(0.5)
 
         QAOA.barrier()
@@ -297,13 +298,13 @@ def show_amplitudes(G, gamma, beta, p =1):
         statevector = execute(QAOA, backend = backend).result().get_statevector(QAOA)
 
         amplitudes = ([abs(i) for i in statevector])
-        state_dict = {bin(i)[2:].zfill(n) : amplitudes[i] for i in range(len(amplitudes))}
+        state_dict = {bin(i)[2:].zfill(n) : amplitudes[i]**2 for i in range(len(amplitudes))}
 
         for rectangle, ampl in zip(graph, amplitudes):
-            rectangle.set_height(ampl)
+            rectangle.set_height(ampl**2)
         plt.title(f'Cost: {get_expectval(state_dict)}\n Iteration {i + 1}, after applying $U_B$\n $\\beta$ = {optimal_gamma[i]}')
         fig.canvas.draw()
-        plt.savefig(f'{i} beta')
+        plt.savefig(f'{i} beta bad')
         plt.pause(0.5)
 
         QAOA.barrier()
