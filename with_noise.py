@@ -90,11 +90,11 @@ p=2
 def execute_circuit(G, gamma, beta, backend, shots, p, noise_model = None ): #returns an instance of the Results class
 
     QAOA = circuit_ansatz(G, gamma, beta, p=p) #creates the circuit
-
     job = execute(QAOA, backend=backend, shots=shots, noise_model=noise_model)
     #job_monitor(job)
     results = job.result()
     counts = results.get_counts() #dictionary with keys 'bit string x' and items 'counts of x'
+    print(counts)
     return counts
 
 def cost_function_C(x,G): #input x is a list
