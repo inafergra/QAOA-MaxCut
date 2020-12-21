@@ -10,15 +10,15 @@ import numpy as np
 
 # Qiskit
 from qiskit.providers.aer import StatevectorSimulator
-from qiskit import QuantumRegister, ClassicalRegister, QuantumCircuit, execute
+from qiskit import QuantumCircuit, execute
 
-#Optimizers
+# Optimizers
 from scipy.optimize import minimize, differential_evolution
 
 # Time
 import time as t
 
-#---------------------------------------end libraries---------------------------------------
+#---------------------------------------end libraries------------------------------------------
 
 tic = t.process_time()
 

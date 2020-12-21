@@ -1,0 +1,80 @@
+from qiskit import execute, QuantumCircuit
+
+def circuit_ansatz(G, gamma, beta, p=1): #gamma and beta are p-arrays or lists
+    n = len(G.nodes())
+    E = G.edges()
+
+    QAOA = QuantumCircuit(n, n)
+    for i in range(p):
+        QAOA.h(range(n))
+
+        QAOA.barrier()
+        for edge in E:
+            k = edge[0]
+            l = edge[1]
+            QAOA.cu1(-2*gamma[i], k, l) #Controlled-Z gate with a -2*gamma phase
+            QAOA.u1(gamma[i], k) #Rotation of gamma around the z axis
+            QAOA.u1(gamma[i], l) 
+
+        QAOA.barrier()
+        QAOA.rx(2*beta[i], range(n)) #X rotation
+
+    QAOA.barrier()
+    QAOA.measure(range(n),range(n)) 
+
+    return QAOA
+
+def execute_circuit(G, gamma, beta, backend, shots, p, noise_model = None ): #returns an instance of the Results class
+    QAOA = circuit_ansatz(G, gamma, beta, p=p) #creates the circuit
+    job = execute(QAOA, backend=backend, shots=shots, noise_model=noise_model)
+    #job_monitor(job)
+    results = job.result()
+    counts = results.get_counts() #dictionary with keys 'bit string x' and items 'counts of x'
+    return counts
+
+def cost_function_C(x,G): #input x is a list
+    E = G.edges()
+    C = 0
+    for vertice in E:
+        e1 = vertice[0]
+        e2 = vertice[1]
+        w = G[e1][e2]['weight']
+        C = C + w*x[e1]*(1-x[e2]) + w*x[e2]*(1-x[e1])
+    return C
+
+def get_expectval(counts, shots, G):
+    total_cost = 0
+    for sample in list(counts.keys()):
+        x = [int(bit_num) for bit_num in list(sample)] #the bit string is saved as a list
+        cost_x = cost_function_C(x,G)
+        total_cost += counts[sample]*cost_x
+    avr_cost = total_cost/shots
+    return avr_cost
+
+def get_solution(counts, G): #takes as the solution the state with the highest cost within all the measured states
+    solution_cost = 0
+    for sample in list(counts.keys()):
+        x = [int(bit_num) for bit_num in list(sample)] #the bit string is saved as a list
+        cost_x = cost_function_C(x,G)
+        if cost_x > solution_cost:
+            solution = x
+            solution_cost = cost_x
+    print(f'The solution is the state {solution} with a cost value of {solution_cost}')
+    return solution, solution_cost
+
+def expect_value_function(parameters, backend, G, shots, p ,noise_model = None):
+    gamma = parameters[:p]
+    beta = parameters[p:]
+    counts = execute_circuit(G, gamma, beta, backend, shots, p=p, noise_model = noise_model)
+    avr_cost = get_expectval(counts, shots, G)
+    return -avr_cost
+
+
+''' Stuff idk where to put and don't want to lose
+#Generate plot of the Graph
+colors = ['g' for node in G.nodes()]
+nx.draw_networkx(G, node_color=colors)
+gamma = [str(f'gamma{layer+1}') for layer in range(p)]
+beta = [str(f'beta{layer+1}') for layer in range(p)]
+circuit_ansatz(G, 'gamma', 'beta', p = p).draw(output = 'mpl') #draw the circuit
+'''
