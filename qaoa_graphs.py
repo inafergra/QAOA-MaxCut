@@ -45,3 +45,4 @@ def weighted_fournodes_graph(): #4-node 3-regular yutsis graph
     G.add_nodes_from(V)
     G.add_weighted_edges_from(E)
     return G
+

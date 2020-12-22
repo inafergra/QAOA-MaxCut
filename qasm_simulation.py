@@ -31,7 +31,7 @@ E = G.edges()
 
 # Choose the arena
 backend = QasmSimulator()
-shots = 1000
+shots = 10000
 
 # Choose number of rounds
 p = 2
@@ -44,22 +44,28 @@ noise_model = NoiseModel()
 noise_model.add_all_qubit_quantum_error(error1, ['u1', 'u2', 'u3'])
 noise_model.add_all_qubit_quantum_error(error2, ['Cx'])
 
-# Setting the bounds for gamma and beta
-# bounds = ((0, np.pi), (0, 2*np.pi)) 
-
-#initial values
 cost_list = []
-for p in range(1,5):
+n = 5
+
+for p in range(1,n):
+
+    # Initial values
     x0 = np.random.randn(2,p)
 
+    # Parameters bounds
+    bound = (0, 2*np.pi)
+    bounds = []
+    for i in range(2*p):
+        bounds.append(bound)
+
     # Nelder-Mead optimizer:
-    max_expect_value = minimize(expect_value_function, x0=x0,args=(backend,G,shots,p,None), options={'disp': True}, method = 'Nelder-Mead')
+    # max_expect_value = minimize(expect_value_function, x0=x0,args=(backend,G,shots,p,None), options={'disp': True}, method = 'Nelder-Mead')
 
     # SLQP optimizer:
-    # max_expect_value = minimize(expect_value_function, x0=np.random.randn(2),args=(backend,G,shots), bounds = bounds, options={'disp': True}, method = 'SLQP')
+    # max_expect_value = minimize(expect_value_function, x0=np.random.randn(2),args=(backend,G,shots,p,None), bounds = bounds, options={'disp': True}, method = 'SLQP')
 
     # Differential evolution optimizer:
-    # max_expect_value = differential_evolution(expect_value_function,args=(backend,G,shots,noise_model), bounds=bounds)
+    max_expect_value = differential_evolution(expect_value_function, bounds=bounds, args=(backend,G,shots,p,NoiseModel))
 
     optimal_gamma, optimal_beta = max_expect_value['x'][:p], max_expect_value['x'][p:]
     counts = execute_circuit(G, optimal_gamma, optimal_beta, backend, shots, p=p)
@@ -69,16 +75,15 @@ for p in range(1,5):
     cost_list.append(avr_cost)
 
     print(f"Number of layers: {p}")
-    print('Optimal gamma, beta = ', optimal_gamma, optimal_beta)
+    print('Optimal gamma, optimal beta = ', optimal_gamma, optimal_beta)
     print('Expectation value of the cost function = ', avr_cost)
-    print('Approximation ratio = ', -max_expect_value.get('fun')/solution_cost )
+    print('Approximation ratio = ', avr_cost/solution_cost ) # This approximation ratio is computed assuming the algorithm is able to find the solution
 
     #plot_histogram(counts,figsize = (8,6),bar_labels = False)
     #plt.show()
 
-plt.plot(cost_list)
+plt.plot(range(1,n), cost_list)
 plt.show()
-
 
 ''' This is my attempt of building a cheating noise model 
 
