@@ -21,8 +21,7 @@ from scipy.optimize import minimize, differential_evolution
 
 # Noises
 from qiskit import Aer
-from qiskit.providers.aer.noise import NoiseModel, QuantumError, thermal_relaxation_error
-from qiskit.providers.aer.noise import NoiseModel, QuantumError, depolarizing_error
+from qiskit.providers.aer.noise import NoiseModel, QuantumError, thermal_relaxation_error, depolarizing_error
  
 # Choose your fighter
 G = graphs.fournodes_3reg_graph()
@@ -42,7 +41,9 @@ error2 = depolarizing_error(0.2, 2) #two qubit gates
 
 noise_model = NoiseModel()
 noise_model.add_all_qubit_quantum_error(error1, ['u1', 'u2', 'u3'])
-noise_model.add_all_qubit_quantum_error(error2, ['Cx'])
+noise_model.add_all_qubit_quantum_error(error2, ['cx'])
+
+basis_gates = noise_model.basis_gates
 
 cost_list = []
 n = 5
@@ -82,8 +83,11 @@ for p in range(1,n):
     #plot_histogram(counts,figsize = (8,6),bar_labels = False)
     #plt.show()
 
+np.save('saved_cost_list', cost_list)
+
 plt.plot(range(1,n), cost_list)
 plt.show()
+plt.save('cost list')
 
 ''' This is my attempt of building a cheating noise model 
 
@@ -91,7 +95,7 @@ plt.show()
 T1 = 45e-3
 T2 = 20e-3
 
-#Gate execution times
+# Gate execution times
 T_1qubit_gates = 20e-6
 T_2qubit_gates = 60e-6
 
