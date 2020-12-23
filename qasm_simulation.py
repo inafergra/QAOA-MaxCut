@@ -32,28 +32,31 @@ E = G.edges()
 backend = QasmSimulator()
 shots = 10000
 
-# Choose number of rounds
+# Choose the number of rounds
 p = 2
 
 # Noise model
-error1 = depolarizing_error(0.2, 1) #single qubit gates
-error2 = depolarizing_error(0.2, 2) #two qubit gates
+error1 = depolarizing_error(0.01, 1) #single qubit gates
+error2 = depolarizing_error(0.01, 2) #two qubit gates
 
 noise_model = NoiseModel()
 noise_model.add_all_qubit_quantum_error(error1, ['u1', 'u2', 'u3'])
 noise_model.add_all_qubit_quantum_error(error2, ['cx'])
 
-basis_gates = noise_model.basis_gates
+#basis_gates=noise_model.basis_gates # We need to pass this as a parameter to the qiksit execute!
+
+# In case we don't want a noise model:
+#noise_model = None
 
 cost_list = []
-n = 5
-
+approx_ratio_list = []
+n = 6 
 for p in range(1,n):
 
     # Initial values
     x0 = np.random.randn(2,p)
 
-    # Parameters bounds
+    # Parameters bounds (for SLQP and diff-evolution)
     bound = (0, 2*np.pi)
     bounds = []
     for i in range(2*p):
@@ -66,28 +69,34 @@ for p in range(1,n):
     # max_expect_value = minimize(expect_value_function, x0=np.random.randn(2),args=(backend,G,shots,p,None), bounds = bounds, options={'disp': True}, method = 'SLQP')
 
     # Differential evolution optimizer:
-    max_expect_value = differential_evolution(expect_value_function, bounds=bounds, args=(backend,G,shots,p,NoiseModel))
+    max_expect_value = differential_evolution(expect_value_function,args=(backend,G,shots,p,noise_model), bounds=bounds)
 
     optimal_gamma, optimal_beta = max_expect_value['x'][:p], max_expect_value['x'][p:]
-    counts = execute_circuit(G, optimal_gamma, optimal_beta, backend, shots, p=p)
+    counts = execute_circuit(G, optimal_gamma, optimal_beta, backend, shots, p, noise_model)
     solution, solution_cost = get_solution(counts, G)
     avr_cost = -max_expect_value.get('fun')
+    approx_ratio = avr_cost/solution_cost # Careful! This approximation ratio is computed assuming the algorithm is able to find the solution
 
     cost_list.append(avr_cost)
+    approx_ratio_list.append(approx_ratio)
 
     print(f"Number of layers: {p}")
+    print(f"Average cost list: {cost_list}")
+    print(f"Approximation ratio list: {approx_ratio_list}")
     print('Optimal gamma, optimal beta = ', optimal_gamma, optimal_beta)
+    print(f'The solution is the state {solution} with a cost value of {solution_cost}')
     print('Expectation value of the cost function = ', avr_cost)
-    print('Approximation ratio = ', avr_cost/solution_cost ) # This approximation ratio is computed assuming the algorithm is able to find the solution
-
+    print('Approximation ratio = ', approx_ratio ) 
+    print('')
     #plot_histogram(counts,figsize = (8,6),bar_labels = False)
     #plt.show()
 
-np.save('saved_cost_list', cost_list)
 
+#np.save('saved_cost_list', cost_list)
 plt.plot(range(1,n), cost_list)
 plt.show()
-plt.save('cost list')
+#plt.savefig('Cost list')
+
 
 ''' This is my attempt of building a cheating noise model 
 

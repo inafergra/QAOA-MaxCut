@@ -1,6 +1,6 @@
 from qiskit import execute, QuantumCircuit
 
-def circuit_ansatz(G, gamma, beta, p=1): #gamma and beta are p-arrays or lists
+def circuit_ansatz(G, gamma, beta, p): #gamma and beta are p-arrays or lists
     n = len(G.nodes())
     E = G.edges()
 
@@ -24,9 +24,15 @@ def circuit_ansatz(G, gamma, beta, p=1): #gamma and beta are p-arrays or lists
 
     return QAOA
 
-def execute_circuit(G, gamma, beta, backend, shots, p, noise_model = None ): #returns an instance of the Results class
+def execute_circuit(G, gamma, beta, backend, shots, p, noise_model): #returns an instance of the Results class
+    
+    if noise_model!= None:
+        basis_gates=noise_model.basis_gates 
+    else:
+        basis_gates = None
+
     QAOA = circuit_ansatz(G, gamma, beta, p=p) #creates the circuit
-    job = execute(QAOA, backend=backend, shots=shots, noise_model=noise_model)
+    job = execute(QAOA, backend=backend, shots=shots, noise_model=noise_model, basis_gates=basis_gates)
     #job_monitor(job)
     results = job.result()
     counts = results.get_counts() #dictionary with keys 'bit string x' and items 'counts of x'
@@ -59,10 +65,9 @@ def get_solution(counts, G): #takes as the solution the state with the highest c
         if cost_x > solution_cost:
             solution = x
             solution_cost = cost_x
-    print(f'The solution is the state {solution} with a cost value of {solution_cost}')
     return solution, solution_cost
 
-def expect_value_function(parameters, backend, G, shots, p ,noise_model = None):
+def expect_value_function(parameters, backend, G, shots, p ,noise_model):
     gamma = parameters[:p]
     beta = parameters[p:]
     counts = execute_circuit(G, gamma, beta, backend, shots, p=p, noise_model = noise_model)
