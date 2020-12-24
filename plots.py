@@ -4,7 +4,7 @@ import numpy as np
 # QASM simulator with no noise:
 approx_ratio = [0.925425,0.99855,0.999625,0.989375,0.99245] # No noise
 approx_ratio_noisy = [0.837725, 0.77485, 0.784075, 0.7585, 0.757125] 
-approx_ratio_noisy2 = [0.900225, 0.916975, 0.88925]
+approx_ratio_noisy2 = [0.904375, 0.9153, 0.8903, 0.872525, 0.867025]
 
 plt.plot(range(1,len(approx_ratio)+1), approx_ratio, 'bo--', markersize=8, label='No noise')
 plt.plot(range(1,len(approx_ratio_noisy2)+1), approx_ratio_noisy2, 'ro--', markersize=8, label='Depolarizing error prob = 0.01')
