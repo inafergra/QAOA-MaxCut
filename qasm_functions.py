@@ -76,9 +76,6 @@ def expect_value_function(parameters, backend, G, shots, p ,noise_model):
 
 
 ''' Stuff idk where to put and don't want to lose
-#Generate plot of the Graph
-colors = ['g' for node in G.nodes()]
-nx.draw_networkx(G, node_color=colors)
 gamma = [str(f'gamma{layer+1}') for layer in range(p)]
 beta = [str(f'beta{layer+1}') for layer in range(p)]
 circuit_ansatz(G, 'gamma', 'beta', p = p).draw(output = 'mpl') #draw the circuit

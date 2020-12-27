@@ -24,7 +24,7 @@ from qiskit import Aer
 from qiskit.providers.aer.noise import NoiseModel, QuantumError, thermal_relaxation_error, depolarizing_error
  
 # Choose your fighter
-G = graphs.fournodes_3reg_graph()
+G = graphs.sixn_prism()
 n = len(G.nodes())
 E = G.edges()
 
@@ -33,11 +33,11 @@ backend = QasmSimulator()
 shots = 10000
 
 # Choose the number of rounds
-p = 2
+p = 1
 
 # Noise model
-error1 = depolarizing_error(0.01, 1) #single qubit gates
-error2 = depolarizing_error(0.01, 2) #two qubit gates
+error1 = depolarizing_error(0.05, 1) #single qubit gates
+error2 = depolarizing_error(0.05, 2) #two qubit gates
 
 noise_model = NoiseModel()
 noise_model.add_all_qubit_quantum_error(error1, ['u1', 'u2', 'u3'])
@@ -46,7 +46,7 @@ noise_model.add_all_qubit_quantum_error(error2, ['cx'])
 #basis_gates=noise_model.basis_gates # We need to pass this as a parameter to the qiksit execute!
 
 # In case we don't want a noise model:
-#noise_model = None
+# noise_model = None
 
 cost_list = []
 approx_ratio_list = []
@@ -75,8 +75,8 @@ for p in range(1,n):
     counts = execute_circuit(G, optimal_gamma, optimal_beta, backend, shots, p, noise_model)
     solution, solution_cost = get_solution(counts, G)
     avr_cost = -max_expect_value.get('fun')
-    approx_ratio = avr_cost/solution_cost # Careful! This approximation ratio is computed assuming the algorithm is able to find the solution
-
+    approx_ratio = avr_cost/solution_cost # Careful! This approximation ratio is computed assuming the algorithm is able to find
+                                          # the solution (i.e. measures the state solution at least once). For enough shots (e.g. 10000) this is almost garanteed
     cost_list.append(avr_cost)
     approx_ratio_list.append(approx_ratio)
 
