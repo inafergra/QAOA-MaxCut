@@ -1,8 +1,10 @@
 from qiskit import execute, QuantumCircuit
 
-def circuit_ansatz(G, gamma, beta, p, prev_gamma, prev_beta): #gamma and beta are p-arrays or lists
+def circuit_ansatz(G, gamma, beta, prev_gamma, prev_beta, p): #gamma and beta are p-arrays or lists
     n = len(G.nodes())
     E = G.edges()
+    gamma = prev_gamma.append(gamma)
+    beta = prev_beta.append(beta)
 
     QAOA = QuantumCircuit(n, n)
     for i in range(p):
@@ -12,21 +14,21 @@ def circuit_ansatz(G, gamma, beta, p, prev_gamma, prev_beta): #gamma and beta ar
         for edge in E:
             k = edge[0]
             l = edge[1]
-            QAOA.cu1(-2*gamma[i], k, l) #Controlled-Z gate with a -2*gamma phase
-            QAOA.u1(gamma[i], k) #Rotation of gamma around the z axis
-            QAOA.u1(gamma[i], l) 
+            QAOA.cu1(-2*gamma[i], k, l) 
+            QAOA.u1(gamma[i], k) 
+            QAOA.u1(gamma[i], l)
 
         QAOA.barrier()
-        QAOA.rx(2*beta[i], range(n)) #X rotation
+        QAOA.rx(2*beta[i], range(n)) 
 
     QAOA.barrier()
     QAOA.measure(range(n),range(n)) 
 
     return QAOA
 
-def execute_circuit(G, gamma, beta, backend, shots, p, noise_model): #returns an instance of the Results class
+def execute_circuit(G, gamma, beta, prev_gamma, prev_beta, backend, shots, p, noise_model): #returns an instance of the Results class
 
-    QAOA = circuit_ansatz(G, gamma, beta, p=p) #creates the circuit
+    QAOA = circuit_ansatz(G, gamma, beta, prev_gamma=prev_gamma, prev_beta=prev_beta, p=p)
 
     if noise_model== None:
         job = execute(QAOA, backend=backend, shots=shots)
@@ -68,10 +70,10 @@ def get_solution(counts, G): #takes as the solution the state with the highest c
             solution_cost = cost_x
     return solution, solution_cost
 
-def expect_value_function(parameters, backend, G, shots, p ,noise_model):
-    gamma = parameters[:p]
-    beta = parameters[p:]
-    counts = execute_circuit(G, gamma, beta, backend, shots, p=p, noise_model = noise_model)
+def expect_value_function(parameters,prev_gamma,prev_beta, backend, G, shots, p, noise_model):
+    gamma = parameters[0]
+    beta = parameters[1]
+    counts = execute_circuit(G, gamma, beta, prev_gamma, prev_beta, backend, shots, p=p, noise_model = noise_model)
     avr_cost = get_expectval(counts, shots, G)
     return -avr_cost
 

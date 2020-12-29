@@ -55,11 +55,20 @@ def sixn_prism():
     G.add_weighted_edges_from(E)
     return G
 
+def erdos_renyi(): #Returns a Gn,p random graph, also known as an Erdős-Rényi graph or a binomial graph.
+
+    n = 9 # number of nodes
+    p = 0.5 # probability of creating an edge
+    G = nx.fast_gnp_random_graph(n, p, seed=1)
+    for e in G.edges():
+        G[e[0]][e[1]] ['weight'] = 1.0
+    return G
+
 if __name__ == "__main__":
     #Generate plot of the Graph
     import matplotlib.pyplot as plt
     G = fournodes_3reg_graph()
     colors = ['g' for node in G.nodes()]
     nx.draw_networkx(G, node_color=colors)
-    plt.savefig('4noderegular_graph')
+    #plt.savefig('4 node regular graph')
     plt.show()

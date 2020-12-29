@@ -1,6 +1,6 @@
 # Private libraries
 import qaoa_graphs as graphs
-from qasm_functions import *
+from layer_by_layer_qasm_functions import *
 
 # General
 import networkx as nx
@@ -32,21 +32,21 @@ G = graphs.fournodes_3reg_graph()
 backend = QasmSimulator.from_backend(FakeVigo())
 shots = 8192
 
-number_of_calls = 0
-
 # Choose the number of rounds
 p = 1
 
 # In case we don't want a noise model:
 noise_model = None
 
+prev_gamma = []]
+prev_beta = []
 cost_list = []
 approx_ratio_list = []
 p_max = 5
 for p in range(1,p_max + 1):
 
     # Initial values
-    x0 = np.random.randn(2,p)
+    x0 = np.random.randn(2)
 
     # Parameters bounds (for SLQP and diff-evolution)
     bound = (0, 2*np.pi)
@@ -61,7 +61,7 @@ for p in range(1,p_max + 1):
     # max_expect_value = minimize(expect_value_function, x0=np.random.randn(2),args=(backend,G,shots,p,None), bounds = bounds, options={'disp': True}, method = 'SLQP')
 
     # Differential evolution optimizer:
-    max_expect_value = differential_evolution(expect_value_function,args=(backend,G,shots,p,noise_model), bounds=bounds, disp = True)
+    max_expect_value = differential_evolution(expect_value_function,args=(prev_gamma,prev_beta,backend,G,shots,p,noise_model), bounds=bounds, disp = True)
 
     optimal_gamma, optimal_beta = max_expect_value['x'][:p], max_expect_value['x'][p:]
     counts = execute_circuit(G, optimal_gamma, optimal_beta, backend, shots, p, noise_model)
@@ -71,6 +71,8 @@ for p in range(1,p_max + 1):
                                           # the solution (i.e. measures the state solution at least once). For enough shots (e.g. 10000) this is almost garanteed
     cost_list.append(avr_cost)
     approx_ratio_list.append(approx_ratio)
+    prev_gamma.append(optimal_gamma)
+    prev_beta.append(optimal_beta)
 
     print(f"Number of layers: {p}")
     print(f"Average cost list: {cost_list}")
@@ -83,7 +85,6 @@ for p in range(1,p_max + 1):
     #plot_histogram(counts,figsize = (8,6),bar_labels = False)
     #plt.show()
 
-    
 
 #np.save('saved_cost_list', cost_list)
 plt.plot(range(1,p_max), cost_list)
