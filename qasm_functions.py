@@ -1,6 +1,6 @@
 from qiskit import execute, QuantumCircuit
 
-def circuit_ansatz(G, gamma, beta, p, prev_gamma, prev_beta): #gamma and beta are p-arrays or lists
+def circuit_ansatz(G, gamma, beta, p): #gamma and beta are p-arrays or lists
     n = len(G.nodes())
     E = G.edges()
 

@@ -3,9 +3,12 @@ from qiskit import execute, QuantumCircuit
 def circuit_ansatz(G, gamma, beta, prev_gamma, prev_beta, p): #gamma and beta are p-arrays or lists
     n = len(G.nodes())
     E = G.edges()
-    gamma = prev_gamma.append(gamma)
-    beta = prev_beta.append(beta)
-
+    temp_gamma = prev_gamma[:]
+    temp_gamma.append(gamma)
+    gamma = temp_gamma[:]
+    temp_beta = prev_beta[:]
+    temp_beta.append(beta)
+    beta = temp_beta[:]
     QAOA = QuantumCircuit(n, n)
     for i in range(p):
         QAOA.h(range(n))
@@ -28,7 +31,7 @@ def circuit_ansatz(G, gamma, beta, prev_gamma, prev_beta, p): #gamma and beta ar
 
 def execute_circuit(G, gamma, beta, prev_gamma, prev_beta, backend, shots, p, noise_model): #returns an instance of the Results class
 
-    QAOA = circuit_ansatz(G, gamma, beta, prev_gamma=prev_gamma, prev_beta=prev_beta, p=p)
+    QAOA = circuit_ansatz(G, gamma, beta, prev_gamma, prev_beta, p)
 
     if noise_model== None:
         job = execute(QAOA, backend=backend, shots=shots)

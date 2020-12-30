@@ -23,16 +23,14 @@ from scipy.optimize import minimize, differential_evolution
 from qiskit import Aer
 from qiskit.providers.aer.noise import NoiseModel, QuantumError, thermal_relaxation_error, depolarizing_error
 from qiskit.test.mock import FakeVigo
- 
+
 # Choose your fighter
 G = graphs.fournodes_3reg_graph()
 
 # Choose the arena
-#backend = QasmSimulator()
+# backend = QasmSimulator()
 backend = QasmSimulator.from_backend(FakeVigo())
 shots = 8192
-
-number_of_calls = 0
 
 # Choose the number of rounds
 p = 1
@@ -43,7 +41,7 @@ noise_model = None
 cost_list = []
 approx_ratio_list = []
 p_max = 5
-for p in range(1,p_max + 1):
+for p in range(5,p_max + 1):
 
     # Initial values
     x0 = np.random.randn(2,p)
@@ -61,7 +59,7 @@ for p in range(1,p_max + 1):
     # max_expect_value = minimize(expect_value_function, x0=np.random.randn(2),args=(backend,G,shots,p,None), bounds = bounds, options={'disp': True}, method = 'SLQP')
 
     # Differential evolution optimizer:
-    max_expect_value = differential_evolution(expect_value_function,args=(backend,G,shots,p,noise_model), bounds=bounds, disp = True)
+    max_expect_value = differential_evolution(expect_value_function,args=(backend,G,shots,p,noise_model), bounds=bounds, disp = True, maxiter=10000, workers=-1)
 
     optimal_gamma, optimal_beta = max_expect_value['x'][:p], max_expect_value['x'][p:]
     counts = execute_circuit(G, optimal_gamma, optimal_beta, backend, shots, p, noise_model)
@@ -83,7 +81,6 @@ for p in range(1,p_max + 1):
     #plot_histogram(counts,figsize = (8,6),bar_labels = False)
     #plt.show()
 
-    
 
 #np.save('saved_cost_list', cost_list)
 plt.plot(range(1,p_max), cost_list)
@@ -113,8 +110,8 @@ noise_model.add_all_qubit_quantum_error(single_qubit_error, ['u1', 'u2', 'u3'])
 noise_model.add_all_qubit_quantum_error(two_qubits_error, ['Cx'])
 '''
 
-
 ''' 
+
 # Noise model: Depolarizing noise--> working
 error1 = depolarizing_error(0.05, 1) #single qubit gates
 error2 = depolarizing_error(0.05, 2) #two qubit gates

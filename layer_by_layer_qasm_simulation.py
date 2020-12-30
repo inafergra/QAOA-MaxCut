@@ -23,22 +23,22 @@ from scipy.optimize import minimize, differential_evolution
 from qiskit import Aer
 from qiskit.providers.aer.noise import NoiseModel, QuantumError, thermal_relaxation_error, depolarizing_error
 from qiskit.test.mock import FakeVigo
- 
+
 # Choose your fighter
 G = graphs.fournodes_3reg_graph()
 
 # Choose the arena
-#backend = QasmSimulator()
-backend = QasmSimulator.from_backend(FakeVigo())
-shots = 8192
+backend = QasmSimulator()
+#backend = QasmSimulator.from_backend(FakeVigo())
+shots = 10000
 
 # Choose the number of rounds
 p = 1
 
 # In case we don't want a noise model:
 noise_model = None
-
-prev_gamma = []]
+ 
+prev_gamma = []
 prev_beta = []
 cost_list = []
 approx_ratio_list = []
@@ -61,10 +61,9 @@ for p in range(1,p_max + 1):
     # max_expect_value = minimize(expect_value_function, x0=np.random.randn(2),args=(backend,G,shots,p,None), bounds = bounds, options={'disp': True}, method = 'SLQP')
 
     # Differential evolution optimizer:
-    max_expect_value = differential_evolution(expect_value_function,args=(prev_gamma,prev_beta,backend,G,shots,p,noise_model), bounds=bounds, disp = True)
-
-    optimal_gamma, optimal_beta = max_expect_value['x'][:p], max_expect_value['x'][p:]
-    counts = execute_circuit(G, optimal_gamma, optimal_beta, backend, shots, p, noise_model)
+    max_expect_value = differential_evolution(expect_value_function,args=(prev_gamma,prev_beta,backend,G,shots,p,noise_model), bounds=bounds, maxiter = 10000, disp = True)
+    optimal_gamma, optimal_beta = max_expect_value['x'][0], max_expect_value['x'][1]
+    counts = execute_circuit(G, optimal_gamma, optimal_beta, prev_gamma, prev_beta, backend, shots, p, noise_model)
     solution, solution_cost = get_solution(counts, G)
     avr_cost = -max_expect_value.get('fun')
     approx_ratio = avr_cost/solution_cost # Careful! This approximation ratio is computed assuming the algorithm is able to find
@@ -87,7 +86,7 @@ for p in range(1,p_max + 1):
 
 
 #np.save('saved_cost_list', cost_list)
-plt.plot(range(1,p_max), cost_list)
+plt.plot(range(1,p_max+1), cost_list)
 plt.show()
 #plt.savefig('Cost list')
 
