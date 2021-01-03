@@ -22,7 +22,7 @@ plt.xlabel('Number of layers p')
 plt.ylabel('Approximation ratio')
 plt.legend()
 plt.title('4 node regular graph')
-plt.savefig('4 node regular graph with qasm')
+#plt.savefig('4 node regular graph with qasm')
 plt.show()
 
 # QASM simulator with no noise // 6nprism:
@@ -41,7 +41,7 @@ plt.xlabel('Number of layers p')
 plt.ylabel('Approximation ratio')
 plt.legend()
 plt.title('QASM simulator-6n prism graph')
-plt.savefig('6-n prism graph with qasm')
+#plt.savefig('6-n prism graph with qasm')
 plt.show()
 
 # QASM simulator with no noise // Erdos-Renyo graph:
@@ -62,21 +62,25 @@ plt.xlabel('Number of layers p')
 plt.ylabel('Approximation ratio')
 plt.legend()
 plt.title('QASM simulator-Erdos Renyi graph')
-plt.savefig('Erdos graph with qasm')
+#plt.savefig('Erdos graph with qasm')
 plt.show()
-
 
 # Number of iterations of the optimizer to the circuit when running it in fakevigo 
-calls = [20,72,275,523,852] # maxiter = 999
-calls_layer_by_layer = [27,24,21,28,17]
-plt.close
-plt.plot(range(1,len(calls)+1), calls, 'o--', markersize=8)
-plt.plot(range(1,len(calls_layer_by_layer)+1), calls_layer_by_layer, 'o--', markersize=8)
+#calls = [20,72,275,523,852] # maxiter = 999
+#calls_layer_by_layer = [27,24,21,28,17]
+calls_neldermead_standard = [403, 803, 1200, 1604, 2000]
+calls_neldermead_laybylay= [402, 401, 400, 402, 401]
+calls_diffevol_standard = [891, 4520, 14534]
+calls_diffevol_laybylay = [1413, 1355, 2356, 3603, 3231]
+plt.close()
+plt.plot(range(1,len(calls_neldermead_standard)+1), calls_neldermead_standard, 'o--', markersize=8, label = 'Layer by layer')
+plt.plot(range(1,len(calls_neldermead_laybylay)+1), calls_neldermead_laybylay, 'o--', markersize=8, label = 'Layer by layer')
+plt.plot(range(1,len(calls_diffevol_standard)+1), calls_diffevol_standard, 'o--', markersize=8, label = 'Layer by layer')
+plt.plot(range(1,len(calls_diffevol_laybylay)+1), calls_diffevol_laybylay, 'o--', markersize=8, label = 'Layer by layer')
 plt.xticks(range(1,len(approx_ratio)+1))
 plt.xlabel('Number of layers p')
-plt.ylabel('Iterations')
+plt.ylabel('Calls')
 plt.legend()
-plt.title('Iterations of the optimizer in FakeVigo')
-plt.savefig('Calls')
+plt.title('Calls to the objective function in FakeVigo')
+#plt.savefig('Calls')
 plt.show()
-

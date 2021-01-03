@@ -71,7 +71,6 @@ print('Expectation value of the cost function = ', -max_expect_value.get('fun'))
 print('Approximation ratio = ', -max_expect_value.get('fun')/solution_cost )
 print("Optimal gamma and beta are :(", optimal_gamma, ", ", optimal_beta, ")")
 
-
 greedy_sol = greedy_solution(G)
 greedy_sol_cost = cost_function_C(greedy_sol, G)
 print(f'The greedy solution gives cost: {greedy_sol_cost}')

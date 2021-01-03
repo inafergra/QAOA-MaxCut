@@ -52,7 +52,7 @@ basis_gates = noise_model.basis_gates
 #vigo_simulator = QasmSimulator.from_backend(backend)
 provider = IBMQ.load_account()
 backend = provider.get_backend('ibmq_vigo')
-IBMQ.providers()    # List all available providers
+# IBMQ.providers()    # List all available providers
 
 circ = QuantumCircuit(3, 3)
 circ.h(0)
@@ -61,7 +61,7 @@ circ.cx(1, 2)
 circ.measure([0, 1, 2], [0, 1, 2])
 
 job = execute(circ, backend=backend, shots = 1000)
-job.status()
+# job.status()
 results = job.result()
 counts = results.get_counts()
 plot_histogram(counts)
