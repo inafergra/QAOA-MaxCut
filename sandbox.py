@@ -1,68 +1,155 @@
 import qaoa_graphs as graphs
-from qasm_functions import *
-from qiskit.test.mock import FakeVigo
+from statevector_functions import *
 
 # General
+import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
-import matplotlib.pyplot as plt
 import pylab as pl
 
 # Qiskit
-from qiskit.providers.aer import QasmSimulator
-from qiskit import QuantumCircuit, execute, IBMQ
-from qiskit.tools.monitor import job_monitor
-from qiskit.visualization import plot_histogram
+from qiskit.providers.aer import StatevectorSimulator
+from qiskit import QuantumCircuit, execute
 
-# Noises
-from qiskit import Aer
-from qiskit.providers.aer.noise import NoiseModel, QuantumError, depolarizing_error, thermal_relaxation_error
- 
-G = graphs.fournodes_3reg_graph()
+# Optimizers
+from scipy.optimize import minimize, differential_evolution
+
+# Choose your fighter
+G = graphs.two_nodes_graph()
 n = len(G.nodes())
 E = G.edges()
 
+# Choose the arena
+backend = StatevectorSimulator()
 
-'''
-# T1 and T2 values (from analysis)
-T1 = 45e-3
-T2 = 20e-3
+# Choose number of rounds
+p = 1
+#colors = ['g' for node in G.nodes()]
+#nx.draw_networkx(G, node_color=colors)
 
-#Gate execution times
-T_1qubit_gates = 20e-3
-T_2qubit_gates = 60e-3
+def show_amplitudes(G, gamma, beta, p=1):
 
-noise_model = NoiseModel()
+    n = len(G.nodes())
+    E = G.edges()
 
-#
-error1 = depolarizing_error(1, 1) #single qubit gates
-error2 = depolarizing_error(0.02, 2) #two qubit gates
-#single_qubit_error = thermal_relaxation_error(T1, T2, T_1qubit_gates) #single qubit gates
-#two_qubits_error = thermal_relaxation_error(T1, T2, T_2qubit_gates) #two qubit gates
+    QAOA = QuantumCircuit(n, n)
+    QAOA.h(range(n))
+    QAOA.barrier()
 
-# Add errors to noise model
-#noise_model.add_all_qubit_quantum_error(single_qubit_error, ['u1', 'u2', 'u3'])
-#noise_model.add_all_qubit_quantum_error(two_qubits_error, ['cx'])
-noise_model.add_all_qubit_quantum_error(error1, ['u1', 'u2', 'u3'])
-noise_model.add_all_qubit_quantum_error(error2, ['cx'])
+    #plt.savefig(f'Initial State bad')
+    np.set_printoptions(precision=3, suppress=True)
+    for i in range(p):
+        for edge in E:
+            k = edge[0]
+            l = edge[1]
+            QAOA.cu1(-2*gamma[i], k, l) #Controlled-Z gate with a -2*gamma phase
+            QAOA.u1(gamma[i], k) #Rotation of gamma around the z axis
+            QAOA.u1(gamma[i], l)
 
-basis_gates = noise_model.basis_gates
-'''
-#backend = FakeVigo()
-#vigo_simulator = QasmSimulator.from_backend(backend)
-provider = IBMQ.load_account()
-backend = provider.get_backend('ibmq_vigo')
-# IBMQ.providers()    # List all available providers
+        statevector = execute(QAOA, backend = StatevectorSimulator()).result().get_statevector(QAOA)
+        #print(f'The amplitudes after applying U_C are :\n {statevector}')
+        probabilities = np.array(([abs(i)**2 for i in statevector]))
+        #print(f'The probabilities after applying U_C are :\n {probabilities}')
+        state_dict = {bin(i)[2:].zfill(n) : probabilities[i] for i in range(len(probabilities))}
 
-circ = QuantumCircuit(3, 3)
-circ.h(0)
-circ.cx(0, 1)
-circ.cx(1, 2)
-circ.measure([0, 1, 2], [0, 1, 2])
+        QAOA.barrier()
+        QAOA.rx(2*beta[i], range(n)) #X rotation
+        statevector = execute(QAOA, backend = StatevectorSimulator()).result().get_statevector(QAOA)
+        #print(f'The amplitudes after applying U_b are :\n {statevector}')
+        probabilities = np.array(([abs(i)**2 for i in statevector]))
+        #print(f'The probabilities after applying U_B are :\n {probabilities}')
+        state_dict = {bin(i)[2:].zfill(n) : probabilities[i] for i in range(len(probabilities))}
+        cost = get_expectval(state_dict, G)
+        QAOA.barrier()
+    return cost
+    #plt.show()
 
-job = execute(circ, backend=backend, shots = 1000)
-# job.status()
-results = job.result()
-counts = results.get_counts()
-plot_histogram(counts)
-print(counts)
+def show_matrix(G, gamma, beta, p=1, state=0):
+
+    n = len(G.nodes())
+    E = G.edges()
+
+    QAOA = QuantumCircuit(n, n)
+    if state == 1:
+        QAOA.x(0)
+    elif state == 2:
+        QAOA.x(1)
+    elif state == 3:
+        QAOA.x(0)
+        QAOA.x(1)
+    #QAOA.h(range(n))
+    #QAOA.barrier()
+
+    #plt.savefig(f'Initial State bad')
+    np.set_printoptions(precision=3, suppress=True)
+    for i in range(p):
+        for edge in E:
+            k = edge[0]
+            l = edge[1]
+            QAOA.cu1(-2*gamma[i], k, l) #Controlled-Z gate with a -2*gamma phase
+            QAOA.u1(gamma[i], k) #Rotation of gamma around the z axis
+            QAOA.u1(gamma[i], l)
+
+        b = []
+        c = []
+        statevector = execute(QAOA, backend = StatevectorSimulator()).result().get_statevector(QAOA)
+        c = np.array(statevector[:])
+        #print(f'The amplitudes after applying U_C are :\n {statevector}')
+        probabilities = np.array(([abs(i)**2 for i in statevector]))
+        #print(f'The probabilities after applying U_C are :\n {probabilities}')
+        state_dict = {bin(i)[2:].zfill(n) : probabilities[i] for i in range(len(probabilities))}
+
+        QAOA.barrier()
+        QAOA.rx(2*beta[i], range(n)) #X rotation
+        statevector = execute(QAOA, backend = StatevectorSimulator()).result().get_statevector(QAOA)
+        b = np.array(statevector[:])
+        #print(f'The amplitudes after applying U_b are :\n {statevector}')
+        probabilities = np.array(([abs(i)**2 for i in statevector]))
+        #print(f'The probabilities after applying U_B are :\n {probabilities}')
+        state_dict = {bin(i)[2:].zfill(n) : probabilities[i] for i in range(len(probabilities))}
+
+        QAOA.barrier()
+    return c, b
+    #plt.show()
+
+#show_amplitudes(G, [-1.57080367], [0.39271383], p=p)
+
+gammas = [[0], [0.5], [1.00456822], [-1.57080367], [-0.66634531]]
+betas = [[0], [0.11244852], [1.12778854], [0.39271383], [0.5]]
+
+overall_dict = {}
+
+for i in range(len(gammas)):
+    temp_dict = {}
+    temp_dict['gamma'] = gammas[i]
+    temp_dict['beta'] = betas[i]
+
+    C_effect = np.zeros((4,4), dtype=np.complex_)
+    B_effect = np.zeros((4,4), dtype=np.complex_)
+
+    for j in range(4):
+        c, b = show_matrix(G, gammas[i], [0], p=p, state=j)
+        for k in range(4):
+            C_effect[j, k] = c[k]
+    for j in range(4):
+        c, b = show_matrix(G, [0], betas[i], p=p, state=j)
+        for k in range(4):
+            B_effect[j, k] = b[k]
+
+    cost = show_amplitudes(G, gammas[i], betas[i])
+
+    temp_dict['U_C'] = C_effect
+    temp_dict['U_B'] = B_effect
+    temp_dict['cost'] = cost
+
+    overall_dict[i] = temp_dict
+
+for i in range(len(overall_dict)):
+    print(f'Iteration number {i}')
+    print(f'Gamma is {overall_dict[i]["gamma"]}')
+    print(f'Beta is {overall_dict[i]["beta"]}')
+    print(f'The effect of matrix U_C is\n {overall_dict[i]["U_C"]}')
+    print(f'The effect of matrix U_B is\n {overall_dict[i]["U_B"]}')
+    print(f'The average cost with these beta and gamma is {overall_dict[i]["cost"]}')
+    print('------------------------------------------------')
+    print('')

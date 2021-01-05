@@ -18,7 +18,7 @@ def circuit_ansatz(G, gamma, beta, p=1): #gamma and beta are p-lists
             l = edge[1]
             QAOA.cu1(-2*gamma[i], k, l) #Controlled-Z gate with a -2*gamma phase
             QAOA.u1(gamma[i], k) #Rotation of gamma around the z axis
-            QAOA.u1(gamma[i], l) 
+            QAOA.u1(gamma[i], l)
         QAOA.barrier()
         QAOA.rx(2*beta[i], range(n)) #X rotation
         QAOA.barrier()
@@ -27,7 +27,7 @@ def circuit_ansatz(G, gamma, beta, p=1): #gamma and beta are p-lists
 
 def execute_circuit(G, gamma, beta, p = 1): #Returns same as earlier, the counts
     n = len(G.nodes())
-    QAOA = circuit_ansatz(G, gamma, beta, p = p) 
+    QAOA = circuit_ansatz(G, gamma, beta, p = p)
     result = execute(QAOA, backend=StatevectorSimulator()).result()
     statevector = result.get_statevector(QAOA)
     probabilities = ([abs(i)**2 for i in statevector])
@@ -56,7 +56,7 @@ def get_expectval(state_dictionary, G): #state_dict = dictionary holding 'state'
 def get_solution(state_dict, G): #takes as the solution the state with the highest cost within all the measured states
     solution_cost = 0
     for state in list(state_dict.keys()):
-        x = [int(bit_num) for bit_num in list(state)] 
+        x = [int(bit_num) for bit_num in list(state)]
         cost_x = cost_function_C(x,G)
         if cost_x > solution_cost:
             solution = x
@@ -78,7 +78,7 @@ def plot_grid(G, p):
         gamma_list, beta_list = np.linspace(0,beta_max,steps), np.linspace(0,gamma_max,steps)
         avr_cost_grid = np.zeros((len(gamma_list),len(beta_list)))
 
-        for i in range(len(gamma_list)): 
+        for i in range(len(gamma_list)):
             gamma = gamma_list[i]
             for j in range(len(beta_list)):
                 beta = beta_list[j]
@@ -94,7 +94,7 @@ def plot_grid(G, p):
         pl.ylabel(r'$\\gamma$')
         pl.show()
         #pl.savefig('')
-    
+
     else:
         print(f'Can not plot for {2*p} parameters.')
         #print(f"0 - don't plot")
@@ -104,8 +104,8 @@ def plot_grid(G, p):
         #print("For the following values of other parameters:")
         #for i in range(p):
         #    if i != plot_for_iteration - 1:
-    
-    return 
+
+    return
 
 
 def show_amplitudes(G, gamma, beta, p=1):
@@ -133,7 +133,7 @@ def show_amplitudes(G, gamma, beta, p=1):
             l = edge[1]
             QAOA.cu1(-2*gamma[i], k, l) #Controlled-Z gate with a -2*gamma phase
             QAOA.u1(gamma[i], k) #Rotation of gamma around the z axis
-            QAOA.u1(gamma[i], l) 
+            QAOA.u1(gamma[i], l)
 
         statevector = execute(QAOA, backend = StatevectorSimulator()).result().get_statevector(QAOA)
         probabilities = ([abs(i)**2 for i in statevector])
@@ -154,7 +154,7 @@ def show_amplitudes(G, gamma, beta, p=1):
 
         for rectangle, probs in zip(bar_graph, probabilities):
             rectangle.set_height(probs)
-        plt.title(f'Cost: {get_expectval(state_dict, G)}\n Iteration {i + 1}, after applying $U_B$\n $\\beta$ = {gamma[i]}')
+        plt.title(f'Cost: {get_expectval(state_dict, G)}\n Iteration {i + 1}, after applying $U_B$\n $\\beta$ = {beta[i]}')
         fig.canvas.draw()
         #plt.savefig(f'{i} beta bad')
         plt.pause(0.5)
