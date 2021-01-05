@@ -31,30 +31,35 @@ E = G.edges()
 backend = StatevectorSimulator()
 
 # Choose number of rounds
-p = 2
+p = 5
 
 # Generate plot of the Graph
 colors = ['g' for node in G.nodes()]
 nx.draw_networkx(G, node_color=colors)
 
-toc = t.process_time()
-print("It took " + str(toc - tic) + " seconds to generate graph")
-tic = t.process_time()
+#toc = t.process_time()
+#print("It took " + str(toc - tic) + " seconds to generate graph")
+#tic = t.process_time()
 
 #circuit_ansatz(G, 'gamma', 'beta').draw(output = 'mpl') #draw the circuit
 
-toc = t.process_time()
-print("It took " + str(toc - tic) + " seconds to generate the grid")
-tic = t.process_time()
+#toc = t.process_time()
+#print("It took " + str(toc - tic) + " seconds to generate the grid")
+#tic = t.process_time()
 
 # setting the bounds for gamma and beta (only for SLQP)
-#bounds = ((0, np.pi), (0, 2*np.pi)) 
+#bounds = ((0, np.pi), (0, 2*np.pi))
+
+bound = (0, 2*np.pi)
+bounds = []
+for i in range(2*p):
+    bounds.append(bound)
 
 # Nelder-Mead optimizer:
 # max_expect_value = minimize(cost_function, x0=np.random.randn(2,p), args=(G,p), options={'disp': True}, method = 'Nelder-Mead')
 
 # Differential evolution optimizer:
-max_expect_value = differential_evolution(expect_value_function,args=(backend,G,shots,noise_model), bounds=bounds)
+max_expect_value = differential_evolution(cost_function,args=(G,p), bounds=bounds)
 
 #toc = t.process_time()
 #print("It took " + str(toc - tic) + " seconds to optimize")
