@@ -28,23 +28,26 @@ from qiskit import Aer
 from qiskit.providers.aer.noise import NoiseModel, QuantumError, thermal_relaxation_error, depolarizing_error
 from qiskit.test.mock import FakeVigo
 
-# Choose your fighter
+# ---------------------Choose your fighter
 G = graphs.fournodes_3reg_graph()
 
-# Choose the arena
-#backend = QasmSimulator()
+# ---------------------Choose the arena
+# Simulators
+backend = QasmSimulator()
 #backend = QasmSimulator.from_backend(FakeVigo())
 
-provider = IBMQ.load_account()
-backend = provider.get_backend('ibmq_vigo')
+# Load IBM quantum experience
+#provider = IBMQ.load_account()
+#backend = provider.get_backend('ibmq_vigo')
 
-#save_account('baeb3be4d807b3b6d170dc2d6de5c1b02b1606d1') #saves account with my API token
+# Load quantum inspire
+#save_account('TOKEN') #saves account with my API token
 #QI.set_authentication()
-#backend = QI.get_backend('QX single-node simulator') #
+#backend = QI.get_backend('Starmon-5') #
 
-shots = 8192
+shots = 10000
 
-# Choose the number of rounds
+# ----------------------Choose the number of rounds
 p = 1
 
 # In case we don't want a noise model:
@@ -66,10 +69,10 @@ for p in range(1,p_max + 1):
         bounds.append(bound)
 
     # Nelder-Mead optimizer:
-    #max_expect_value = minimize(expect_value_function, x0=x0,args=(prev_gamma,prev_beta,backend,G,shots,p,noise_model), options={'disp': False}, method = 'Nelder-Mead')
+    max_expect_value = minimize(expect_value_function, x0=x0,args=(prev_gamma,prev_beta,backend,G,shots,p,noise_model), options={'disp': True, 'maxiter': 20000}, method = 'Nelder-Mead')
 
     # Differential evolution optimizer:
-    max_expect_value = differential_evolution(expect_value_function,args=(prev_gamma,prev_beta,backend,G,shots,p,noise_model), bounds=bounds, maxiter = 10000, disp = False)
+    # max_expect_value = differential_evolution(expect_value_function,args=(prev_gamma,prev_beta,backend,G,shots,p,noise_model), bounds=bounds, maxiter = 10000, disp = True)
 
     optimal_gamma, optimal_beta = max_expect_value['x'][0], max_expect_value['x'][1]
     counts = execute_circuit(G, optimal_gamma, optimal_beta, prev_gamma, prev_beta, backend, shots, p, noise_model)

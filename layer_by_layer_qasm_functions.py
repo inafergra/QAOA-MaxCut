@@ -32,9 +32,8 @@ def execute_circuit(G, gamma, beta, prev_gamma, prev_beta, backend, shots, p, no
     QAOA = circuit_ansatz(G, gamma, beta, prev_gamma, prev_beta, p)
 
     if noise_model== None:
-        print('before job')
         job = execute(QAOA, backend=backend, shots=shots)
-        print('after job')
+        #print('job')
         #job.status()
     else:
         basis_gates=noise_model.basis_gates 
