@@ -29,7 +29,7 @@ from qiskit.providers.aer.noise import NoiseModel, QuantumError, thermal_relaxat
 from qiskit.test.mock import FakeVigo
 
 # ---------------------Choose your fighter
-G = graphs.fournodes_3reg_graph()
+G = graphs.starmon_graph()
 
 # ---------------------Choose the arena
 # Simulators
@@ -46,9 +46,6 @@ backend = QasmSimulator()
 #backend = QI.get_backend('Starmon-5') #
 
 shots = 10000
-
-# ----------------------Choose the number of rounds
-p = 1
 
 # In case we don't want a noise model:
 noise_model = None
@@ -69,7 +66,7 @@ for p in range(1,p_max + 1):
         bounds.append(bound)
 
     # Nelder-Mead optimizer:
-    max_expect_value = minimize(expect_value_function, x0=x0,args=(prev_gamma,prev_beta,backend,G,shots,p,noise_model), options={'disp': True, 'maxiter': 20000}, method = 'Nelder-Mead')
+    max_expect_value = minimize(expect_value_function, x0=x0,args=(prev_gamma,prev_beta,backend,G,shots,p,noise_model), options={'disp': True, 'maxiter': 20000, 'maxfev' : 100000}, method = 'Nelder-Mead')
 
     # Differential evolution optimizer:
     # max_expect_value = differential_evolution(expect_value_function,args=(prev_gamma,prev_beta,backend,G,shots,p,noise_model), bounds=bounds, maxiter = 10000, disp = True)

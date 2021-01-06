@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
 
-def diamond_graph(): #Starmon 5 shape
+def starmon_graph(): #Starmon 5 shape
     n     = 5
     V     = np.arange(0,n,1)
     E     =[(0,1,1.0),(0,2,1.0),(0,3,1.0),(4,0,1.0)]
