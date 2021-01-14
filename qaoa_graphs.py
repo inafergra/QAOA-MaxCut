@@ -46,7 +46,7 @@ def weighted_fournodes_graph(): #4-node 3-regular yutsis graph
     G.add_weighted_edges_from(E)
     return G
 
-def sixn_prism(): 
+def sixn_prism():
     n     = 6
     V     = np.arange(0,n,1)
     E     = [(0,1,1.0),(0,5,1.0),(0,4,1.0),(1,2,1.0),(1,5,1.0),(2,3,1.0),(2,4,1.0),(3,4,1.0),(3,5,1.0)]
@@ -67,7 +67,7 @@ def erdos_renyi(): #Returns a Gn,p random graph, also known as an Erdős-Rényi 
 if __name__ == "__main__":
     #Generate plot of the Graph
     import matplotlib.pyplot as plt
-    G = fournodes_3reg_graph()
+    G = triangle()
     colors = ['g' for node in G.nodes()]
     nx.draw_networkx(G, node_color=colors)
     #plt.savefig('4 node regular graph')

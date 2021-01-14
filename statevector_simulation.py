@@ -20,15 +20,12 @@ import time as t
 
 #---------------------------------------end libraries------------------------------------------
 
-tic = t.process_time()
+#tic = t.process_time()
 
 # Choose your fighter
 G = graphs.sixn_prism()
 n = len(G.nodes())
 E = G.edges()
-
-# Choose the arena
-backend = StatevectorSimulator()
 
 # Choose number of rounds
 p_max = 4
@@ -37,14 +34,14 @@ p_max = 4
 colors = ['g' for node in G.nodes()]
 nx.draw_networkx(G, node_color=colors)
 
-toc = t.process_time()
-print("It took " + str(toc - tic) + " seconds to generate graph")
-tic = t.process_time()
+#toc = t.process_time()
+#print("It took " + str(toc - tic) + " seconds to generate graph")
+#tic = t.process_time()
 
 #circuit_ansatz(G, 'gamma', 'beta').draw(output = 'mpl') #draw the circuit
 
-toc = t.process_time()
-print("It took " + str(toc - tic) + " seconds to generate the grid")
+#toc = t.process_time()
+#print("It took " + str(toc - tic) + " seconds to generate the grid")
 #tic = t.process_time()
 
 # setting the bounds for gamma and beta (only for SLQP)

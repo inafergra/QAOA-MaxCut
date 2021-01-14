@@ -29,7 +29,7 @@ from qiskit.providers.aer.noise import NoiseModel, QuantumError, thermal_relaxat
 from qiskit.test.mock import FakeVigo
 
 # ---------------------Choose your fighter
-G = graphs.starmon_graph()
+G = graphs.erdos_renyi()
 
 # ---------------------Choose the arena
 # Simulators
@@ -66,10 +66,10 @@ for p in range(1,p_max + 1):
         bounds.append(bound)
 
     # Nelder-Mead optimizer:
-    max_expect_value = minimize(expect_value_function, x0=x0,args=(prev_gamma,prev_beta,backend,G,shots,p,noise_model), options={'disp': True, 'maxiter': 20000, 'maxfev' : 100000}, method = 'Nelder-Mead')
+    # max_expect_value = minimize(expect_value_function, x0=x0,args=(prev_gamma,prev_beta,backend,G,shots,p,noise_model), options={'disp': True, 'maxiter': 20000, 'maxfev' : 100000}, method = 'Nelder-Mead')
 
     # Differential evolution optimizer:
-    # max_expect_value = differential_evolution(expect_value_function,args=(prev_gamma,prev_beta,backend,G,shots,p,noise_model), bounds=bounds, maxiter = 10000, disp = True)
+    max_expect_value = differential_evolution(expect_value_function,args=(prev_gamma,prev_beta,backend,G,shots,p,noise_model), bounds=bounds, maxiter = 10000, disp = False)
 
     optimal_gamma, optimal_beta = max_expect_value['x'][0], max_expect_value['x'][1]
     counts = execute_circuit(G, optimal_gamma, optimal_beta, prev_gamma, prev_beta, backend, shots, p, noise_model)
