@@ -23,8 +23,7 @@ Thus, here, we encode the information about the subset a particular node belongs
 $C_k \in \{0, 1\}$ based on the string $z$. It tells us if the $k^{th}$ edge is being cut or not by the partition denoted by the string $z$.
 Our aim is to find the string(s) $z$ that give us the maximum value of $C$.
 
-Firstly, we need to convert this (thus far) classical problem into a quantum problem. Thus, the string $z$ which denotes a particular partition of the nodes, translates to the quantum state $\ket{z}$.
-
+Firstly, we need to convert this (thus far) classical problem into a quantum problem. Thus, the string $z$ which denotes a particular partition of the nodes, translates to the quantum state $\ket{z}$.\\
 To illustrate this, the partition shown in the figure \ref{fig:GraphCut}, would be denoted by the classical string $z = 01101$ and subsequently, in the quantum state $\ket{01101}$.
 Thus, each of the basis state would denote a particular partition of the nodes.
 
@@ -38,23 +37,19 @@ Thus, the basis states are the eigenstates with he cost as their corresponding e
 
 For the operator $C$, there will be a specific value $c'=c(z')\geq c(z),\forall z\neq z'$ which will be the solution of our maximization problem.
 For any general state $\ket{\psi}=\sum_{z \in\{0,1\}^n}a_z\ket{z}$, we can construct the expectation value of the cost function as:
-
 \[
     \left\langle C\right\rangle =\bra{\psi}\hat{C}\ket{\psi} = \sum_{z \in\{0,1\}^n}c(z)|a_z|^2
 \]
-
 Thus, to find an approximate solution, we try to find $\ket{\psi}$ that maximizes $\langle C \rangle$
 
 Say the actual MaxCut partition is $z^*$, then, we want to get $\ket{\psi} = \ket{z^*}$.
-In that case, $\langle C \rangle = \langle C \rangle_{max}$.
-But in general, we don't know how to find $\langle C \rangle_{max}$ efficiently.
-Thus, what we do is we try and get $\langle C \rangle$ as close to $\langle C \rangle_{max}$ as possible.
+In that case, $\langle C \rangle = C_{max}$.
+But in general, we don't know how to find $C_{max}$ efficiently.
+Thus, what we do is we try and get $\langle C \rangle$ as close to $C_{max}$ as possible.
 In other words, we try to get $\ket{\psi}$ such that the amplitude(s) of $\ket{z^*}$ is very high.
 
 As a metric of performance, we define the approximation ratio denoted by $r$ and defined as
-$$r = \frac{ \langle C \rangle }{\langle C \rangle_{max}} $$
-
-
+$$r = \frac{ \langle C \rangle }{C_{max}} $$
 Having established our goal to get a $\ket{\psi}$ with high amplitudes for $\ket{z^*}$, let us define the quantum operators that we use.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{First step: $U_C(\gamma)$}
@@ -63,72 +58,59 @@ This is essentially the function $C$ that we defined earlier.
 Thus, it can be written as
 
 \[
-    H_C = \sum_{k=1}^m C_k = \sum_{x \in \{0, 1\}^n}C(x)\ket{x}\bra{x}
+    H_C = \sum_{k=1}^m C_k = \sum_{z \in \{0, 1\}^n}C(z)\ket{z}\bra{z}
 \]
 As we can see it is the same operator that we defined in \ref{equation:cost_op} and it has the same properties.
 Using this Hamiltonian, we define a Unitary operator $U_C(\gamma)$ in the following way:
 $$U_C(\gamma) = e^{-i \gamma H_C}$$
-
-Thus, $U_C$ is a parametric operator, parameterised by the real number $\gamma$
+Thus, $U_C$ is a parametric operator, parameterised by the real number $\gamma$.
 
 Now let's see what is the action of this operator on a general state $\ket{\psi}$
 \[
     U_C(\gamma)\ket{\psi}= U_C(\gamma)\sum_{z \in\{0,1\}^n} a_z\ket{z} = \sum_{z \in\{0,1\}^n} a_z e^{-i\gamma C(z)} \ket{z}
 \]
-
 Thus, all basis states get a phase depending on the cost of the partition corresponding to that state and $\gamma$.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Second step: $U_B(\beta)$}
-The amplitudes change, however, since the only change is in the complex phases of the states, the probabilities for each state are however same as before applying the operator $U_C$ and likewise, the expectation values have not changed either.
+The amplitudes change, however, since the only change is in the complex phases of the states, the probabilities for each state are same as before applying the operator $U_C$ and likewise, the expectation values have not changed either.
 
 Having changed the relative phases of the states, we need to operate with an operator that now mixes them, that is, causes a superposition between these states.
 To achieve this, as earlier, we first define an Hamiltonian and call it the \textit{Mixing Hamiltonian}.
 We define it as following:
-
 \[
     H_B=\sum_{k=1}^n\sigma_k^x= \sigma_1^x\otimes \mathbb{I}^{\otimes(n-1)} + \mathbb{I} \otimes \sigma_2^x \otimes \mathbb{I}^{ \otimes(n-2)}+ \cdots + \mathbb{I}^{\otimes(n-1)} \otimes \sigma_n^x
 \]
-
 Again using this Hamiltonian, we define a unitary $U_B(\beta)$ as
 $$U_B(\beta)= e^{-i\beta H_B}$$
-
 As earlier, $U_B(\beta)$ too is a parametric operator that is parameterised by real number $\beta$.
 
 To see the action of this operator, we write $U_B(\beta)$ as
-
 \[
     U_B(\beta)= e^{-i\beta H_B} = e^{-i\beta\sum_{k=1}^n \sigma_k^x} = \prod_{k=1}^n e^{-i\beta \sigma_k^x}
 \]
-
-Recalling the definition of the $x$-rotation operator $R_x(\theta)=e^{-i\frac{\theta}{2}\sigma^x}$, with 
-
-$\theta\in [0,2\pi]$, it becomes clear that the operator $U_B(\beta)$ can be written as:
+Recalling the definition of the $x$-rotation operator $R_x(\theta)=e^{-i\frac{\theta}{2}\sigma^x}$, with $\theta\in [0,2\pi]$, it becomes clear that the operator $U_B(\beta)$ can be written as:
 \[
     U_B(\beta)= R_x^{\otimes n}(2\beta)\quad\text{with }\beta\in [0,\pi]
 \]
+Which is actually a rotation about X for each qubit by an angle $2\beta$.
 
-Thus, this is actually rotation about X for each qubit by an angle $2\beta$.
-
-The combined effect of applying $U_C(\gamma)$ followed by $U_B(\beta)$ is to first give a complex phase to all the states (which depends on the cost and the parameter $\gamma$) followed by applying an X rotation (which depends on the parameter $\beta$) for all qubits.
-
-So, all the states will mix and how exactly they mix is controlled by $\gamma$ and $\beta$.
+The combined effect of applying $U_C(\gamma)$ followed by $U_B(\beta)$ is to first give a complex phase to all the states (which depends on the cost and the parameter $\gamma$) followed by applying an X rotation (which depends on the parameter $\beta$) for all qubits.\\
+Thus, all the states will mix and how exactly they mix is controlled by $\gamma$ and $\beta$.
 We try and tweak these parameters such that this mixing happens in such a way that the amplitude of the states with low cost falls (they interfere destructively) and the amplitudes of the states with higher cost rises (they interfere constructively).
 
 \subsection{Building the operators}
 Having defined the operators mathematically, it is instructive to look at how we implement the operators.
 
-From the definition and action of $U_B(\beta)$ as indicated in the previous subsection, it is rotation about X axis by an angle $2\beta$ for each qubit. Thus, it can be implemented using $n$ single qubit rotations where $n$ is the number of qubits (thus, also the number of nodes). Thus,
+From the definition and action of $U_B(\beta)$ as indicated in the previous subsection, it is rotation about X axis by an angle $2\beta$ for each qubit. Thus, it can be implemented using $n$ single qubit rotations where $n$ is the number of qubits (i.e. the number of nodes). Thus,
 
 $$U_B(\beta)=\prod_{i=1}^{n} R_{Xi}(2\beta)$$
 
 Now, looking at $U_C(\gamma)$, and the definition of $H_C$ and the equations \ref{g_def} and \ref{C_def} along with the fact that $\ket{z}$ denotes the partitions, we define:
 
 $$H_C = \sum_{(jk) \in E} \frac{1}{2}(\mathbb{I}- Z_j Z_k)$$
-
-The implementation of $U_C(\gamma)$ would then translate to 
-
-$$U_C (\gamma) = \prod_{(i,j) \in E} CR_Z_{i,j}(-2\gamma)R_{Zi}(\gamma)R_{Zj}(\gamma)$$
-$i$ and $j$ are the nodes at the end of the edge. $CR_Z_{i,j}(-2\gamma)$ is a controlled rotation around Z by angle $2\gamma$, and $R_Z_{i}(\gamma)$ is rotation about Z by angle $\gamma$ for qubit $i$. We would have to apply this combination for each edge in $E$.
+The implementation of $U_C(\gamma)$ would then translate to
+\[U_C (\gamma) = \prod_{(i,j) \in E} CR_Z_{i,j}(-2\gamma)R_{Zi}(\gamma)R_{Zj}(\gamma)\]
+Where $i$ and $j$ are the nodes at the end of the edge. $CR_Z_{i,j}(-2\gamma)$ is a controlled rotation around $Z$ by angle $2\gamma$, and $R_Z_{i}(\gamma)$ is rotation about $Z$ by angle $\gamma$ for qubit $i$. We would have to apply this combination for each edge in $E$.
 
 To see the implementation for a simple graph, consider a regular 3-node graph. The graph is as shown in figure \ref{fig:triangle}.
 
@@ -157,7 +139,7 @@ To implement QAOA for this graph, we would have to apply the following gates as 
 
 Note that the circuit on figure \ref{fig:3ncircuit} is not optimal. Since all gates commute, the circuit could be compiled with many less gates. Nevertheless, for the sake of simplicity, we will stick to this ansatz as this allows to easily generalize for different graphs.
 
-It would be insightful to talk about the particular structure of $U_B$ or rather its relation to $U_C$.
+It would be insightful to talk about the particular structure of $U_B$ or rather its relation to $U_C$.\\
 Note that here, the gates in $U_C$ and those in $U_B$ do not commute.
 By extension, $U_C$ and $U_B$ themselves do not commute.
 This is an important feature.
@@ -168,14 +150,11 @@ First, it is clear that in that case, $U_C$ and $U_B$ would commute. But why is 
 From our discussion earlier, we know that $U_C$ applies phase to all states, thus it does not change the probabilities.
 If $U_B$ were to commute with it, then that means, $U_C$ and $U_B$ would have the same eigenbasis.
 And in that case, applying $U_B$ to the eigenstates of $U_C$ (which are the standard basis states), one would get
-
 $$U_B(\beta)\ket{z} = b(z)\ket{z}$$
-
 since these are also the eigenstates of $U_B$. And since, $U_B$ is a unitary matrix, the eigenvalues are all of unit magnitude. Thus, applying $U_B$ is same as applying some phase.
 
 All of this would mean that the amplitudes of the states change but they change only in terms of the phase they have.
-And thus, the probabilities of these states are unchanged.
-
+And thus, the probabilities of these states are unchanged.\\
 This means, $\langle C \rangle$ which we want to maximise, never changes, no matter what values of $\gamma$ and $\beta$ we choose.
 Thus, it is crucial that $U_B$ and $U_C$ do not commute since the only purpose of $U_B$ is to mix the states (thus the name \textit{Mixing Hamiltonian} for $H_B$) and that would not be possible if they commute.
 This means, we could choose rotations about $Y$ instead of $X$ for $H_B$ but not about $Z$ or anything that commutes with $U_C$ 
@@ -183,7 +162,7 @@ This means, we could choose rotations about $Y$ instead of $X$ for $H_B$ but not
 \section{Workflow}
 
 Having defined the necessary operators, we have a look at the algorithm now.
-We start with a state that is equal superposition of all states. Thus we start with:
+We start with a state that is equal superposition of all states. Then we start with:
 
 \[\ket{\psi}=H^{\otimes n}\ket{0}^{\otimes n} = \frac{1}{\sqrt{2^n}}\sum_{z \in\{0,1\}^n}\ket{z}\]
 
@@ -193,8 +172,7 @@ Thus we have $2p$ parameters, i.e, $p$ values of $\gamma$ and $p$ values of $\be
 From here on, we call one application of $U_C$ followed by $U_B$ a layer.
 Thus, we here have $p$ layers.
 
-After applying the unitary transformations, we measure the qubits in standard basis to get the state $z$ and from that, we get the cost for that state i.e, $C(z)$.
-
+After applying the unitary transformations, we measure the qubits in standard basis to get the state $z$ and from that, we get the cost for that state i.e, $C(z)$.\\
 Thus, the circuit can be represented as in the figure \ref{fig:General_QC} below
 
 \begin{figure}[h]

@@ -35,14 +35,11 @@ Let us define a function that identifies which subset any particular node is in.
    \end{cases}
    \label{g_def}
 \end{equation}
-
 Thus, for any edge with vertices $i$ and $j$, if it is being cut by the partition or not can be given by
-
 \begin{equation}
     C_{ij} = \frac{1}{2}(1 - g(i)g(j))
     \label{C_def}
 \end{equation}
-
 Consequentially, the total number of edges being cut is simply the sum of $C_{ij}$ over all edges. Thus, the function that we want to maximize is
 
 $$C(g) = \sum_{(i, j) \in E}C_{ij} = \frac{1}{2}\sum_{(i, j) \in E}(1 - g(i)g(j))$$
