@@ -3,7 +3,6 @@ from qiskit import execute, QuantumCircuit
 def circuit_ansatz(G, gamma, beta, p): #gamma and beta are p-arrays or lists
     n = len(G.nodes())
     E = G.edges()
-
     QAOA = QuantumCircuit(n, n)
     for i in range(p):
         QAOA.h(range(n))
@@ -25,7 +24,6 @@ def circuit_ansatz(G, gamma, beta, p): #gamma and beta are p-arrays or lists
     return QAOA
 
 def execute_circuit(G, gamma, beta, backend, shots, p, noise_model): #returns an instance of the Results class
-
     QAOA = circuit_ansatz(G, gamma, beta, p=p) #creates the circuit
 
     if noise_model== None:

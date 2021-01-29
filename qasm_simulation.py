@@ -10,14 +10,14 @@ import pylab as pl
 
 # Qiskit
 from qiskit.providers.aer import QasmSimulator
-from qiskit import QuantumCircuit, execute
+from qiskit import QuantumCircuit, execute, IBMQ
 from qiskit.tools.monitor import job_monitor
 from qiskit.visualization import plot_histogram
 import warnings
 warnings.filterwarnings('ignore')
 
 # Optimizers
-from scipy.optimize import minimize, differential_evolution
+from scipy.optimize import minimize, differential_evolution, dual_annealing
 
 # Noises
 from qiskit import Aer
@@ -28,7 +28,7 @@ from qiskit.test.mock import FakeVigo
 G = graphs.fournodes_3reg_graph()
 
 # Choose the arena
-# backend = QasmSimulator()
+#backend = QasmSimulator()
 backend = QasmSimulator.from_backend(FakeVigo())
 shots = 8192
 
@@ -40,8 +40,9 @@ noise_model = None
 
 cost_list = []
 approx_ratio_list = []
+calls_list = []
 p_max = 5
-for p in range(5,p_max + 1):
+for p in range(4,p_max + 1):
 
     # Initial values
     x0 = np.random.randn(2,p)
@@ -53,15 +54,16 @@ for p in range(5,p_max + 1):
         bounds.append(bound)
 
     # Nelder-Mead optimizer:
-    # max_expect_value = minimize(expect_value_function, x0=x0,args=(backend,G,shots,p,None), options={'disp': True}, method = 'Nelder-Mead')
-
-    # SLQP optimizer:
-    # max_expect_value = minimize(expect_value_function, x0=np.random.randn(2),args=(backend,G,shots,p,None), bounds = bounds, options={'disp': True}, method = 'SLQP')
+    # max_expect_value = minimize(expect_value_function, x0=x0,args=(backend,G,shots,p,None), options={'disp': False}, method = 'Nelder-Mead')
 
     # Differential evolution optimizer:
-    max_expect_value = differential_evolution(expect_value_function,args=(backend,G,shots,p,noise_model), bounds=bounds, disp = True, maxiter=10000, workers=-1)
+    max_expect_value = differential_evolution(expect_value_function,args=(backend,G,shots,p,noise_model), bounds=bounds, disp = False, maxiter=10000)
+
+    # Dual annealing optimizer:
+    # max_expect_value = dual_annealing(expect_value_function,args=(backend,G,shots,p,noise_model), bounds=bounds, maxiter=10000)
 
     optimal_gamma, optimal_beta = max_expect_value['x'][:p], max_expect_value['x'][p:]
+    number_of_calls, numbers_of_iterations = max_expect_value['nfev'], max_expect_value['nit']
     counts = execute_circuit(G, optimal_gamma, optimal_beta, backend, shots, p, noise_model)
     solution, solution_cost = get_solution(counts, G)
     avr_cost = -max_expect_value.get('fun')
@@ -69,24 +71,27 @@ for p in range(5,p_max + 1):
                                           # the solution (i.e. measures the state solution at least once). For enough shots (e.g. 10000) this is almost garanteed
     cost_list.append(avr_cost)
     approx_ratio_list.append(approx_ratio)
+    calls_list.append(number_of_calls)
 
     print(f"Number of layers: {p}")
-    print(f"Average cost list: {cost_list}")
-    print(f"Approximation ratio list: {approx_ratio_list}")
+    print(f'Number of optimizer iterations: {numbers_of_iterations}')
+    print(f'Number of calls to the objective function: {number_of_calls}')
     print('Optimal gamma, optimal beta = ', optimal_gamma, optimal_beta)
     print(f'The solution is the state {solution} with a cost value of {solution_cost}')
     print('Expectation value of the cost function = ', avr_cost)
     print('Approximation ratio = ', approx_ratio ) 
     print('')
+    print(f'Number of calls list: {calls_list}')
+    print(f"Average cost list: {cost_list}")
+    print(f"Approximation ratio list: {approx_ratio_list}")
+    print('-------------------------------------------------------------------')
     #plot_histogram(counts,figsize = (8,6),bar_labels = False)
     #plt.show()
 
-
 #np.save('saved_cost_list', cost_list)
-plt.plot(range(1,p_max), cost_list)
+plt.plot(range(1,p_max+1), cost_list)
 plt.show()
 #plt.savefig('Cost list')
-
 
 ''' This is my attempt of building a cheating noise model 
 

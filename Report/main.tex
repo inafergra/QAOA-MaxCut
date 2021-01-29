@@ -1,0 +1,66 @@
+\documentclass[a4paper]{report}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{subfig}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{anysize}
+\usepackage[a4paper,top=3cm,bottom=2cm,left=2cm,right=2cm,marginparwidth=1.75cm]{geometry}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{dsfont}
+\usepackage{derivative}
+\usepackage{graphicx,fancyhdr,titlesec,color, wrapfig}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage{sectsty}
+\usepackage{apacite}
+\usepackage{float}
+\usepackage{titling} 
+\usepackage{blindtext}
+\usepackage[numbers]{natbib}
+%\setcitestyle{numbers,open={[},close={]}}
+\bibliographystyle{unsrtnat}
+%\usepackage[colorinlistoftodos]{todonotes}
+\graphicspath{{images/}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\definecolor{gray75}{gray}{0.75}
+\newcommand{\hsp}{\hspace{20pt}}
+\titleformat{\chapter}[hang]{\Huge\bfseries}{\thechapter\hsp\textcolor{gray75}{$\mid$}\hsp}{0pt}{\Huge\bfseries}
+\pagestyle{fancy}
+\fancyhead{}
+\fancyhead[RO,LE]{Implementation of a QAOA for the Max-Cut problem}
+\fancyfoot{}
+\fancyfoot[LE,RO]{\thepage}
+\fancyfoot[LO,RE]{Part \thechapter}
+\usepackage{listings}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{tikz}
+\usetikzlibrary{quantikz, shapes.geometric, arrows, petri, topaths}
+
+%\usepackage[position=top]{subfig}
+%\renewcommand{\thesubsection}{\thesection.\alph{subsection}}
+\usepackage{biblatex}
+\addbibresource{others/references.bib}
+
+\setlength{\parskip}{1em}
+
+\begin{document}
+    \input{others/title_page.tex}
+    \tableofcontents
+\chapter{The Max Cut problem}
+    \input{chapters/maxcut.tex}
+\chapter{QAOA}
+    \input{chapters/qaoa.tex}
+\chapter{Implementation}
+    \input{chapters/implementation.tex}
+%\chapter{Classical Approximation Algorithm}
+%    \input{chapters/clas_app_alg.tex}
+\chapter{Discussion}
+    \input{chapters/discussion.tex}
+
+
+\printbibliography
+%\bibliography{others/references.bib}
+\end{document}
